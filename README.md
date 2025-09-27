@@ -1,197 +1,70 @@
 # YouTube Shorts & Long-Form Video Tracker Backend
 
-A comprehensive Node.js backend for tracking YouTube Shorts and Long-Form videos, calculating outlier metrics, and providing analytics through REST APIs.
+This repository contains a Node.js backend that fetches trending YouTube videos, classifies Shorts vs long-form, computes outlier metrics, and exposes a REST API for analytics and administration.
 
-## 🚀 Features
+## Quick start
 
-- **Automated Data Fetching**: Scheduled fetching of trending videos every 15 minutes
-- **Smart Shorts Detection**: Automatically detects YouTube Shorts based on duration and hashtags
-- **Outlier Analysis**: Calculates outlier factors by comparing video performance to channel baselines
-- **MongoDB Integration**: Efficient data storage with proper indexing for fast queries
-- **REST API**: Complete API for accessing trending videos, outliers, and channel data
-- **Admin Controls**: Administrative endpoints for manual operations and system monitoring
+1. Copy `.env.example` to `.env` and set the required values (YouTube API key, MongoDB URI, etc.).
 
-## 📊 Database Schema
+   Example `.env`:
 
-### Video Schema
-- `videoId`: Unique YouTube video ID
-- `channelId`: YouTube channel ID
-- `title`, `description`, `tags`: Video metadata
-- `lengthSeconds`: Video duration in seconds
-- `isShort`: Boolean flag for YouTube Shorts
-- `views`, `likes`, `comments`: Engagement metrics
-- `viewsPerHour`: Performance metric
-- `outlierFactor`: Performance vs channel baseline
-- `uploadTime`, `dataFetchedAt`: Timestamps
+   ```env
+   YOUTUBE_API_KEY=your_youtube_api_key_here
+   MONGO_URI=mongodb://localhost:27017/youtube_tracker
+   PORT=5000
+   NODE_ENV=development
+   ```
 
-### Channel Schema
-- `channelId`: Unique YouTube channel ID
-- `channelName`: Channel display name
-- `subscriberCount`, `totalViews`, `uploadCount`: Channel statistics
-- `avgViewsLast5`: Average views of last 5 videos (baseline)
+2. Install dependencies and start the server:
 
-## 🛠️ Setup Instructions
+   ```bash
+   npm install
+   npm run dev
+   ```
 
-### 1. Environment Configuration
+3. (Optional) Start MongoDB locally or use Atlas. Example (macOS Homebrew):
 
-Create a `.env` file with your configuration:
+   ```bash
+   brew services start mongodb-community
+   ```
 
-```env
-# YouTube API Configuration
-YOUTUBE_API_KEY=your_youtube_api_key_here
+## API examples
 
-# MongoDB Configuration
-MONGO_URI=mongodb://localhost:27017/youtube_tracker
+- `GET /api/videos/trending`
+- `GET /api/videos/outliers`
+- `GET /api/videos/shorts`
+- `GET /api/channels/:id`
+- `GET /api/admin/status`
+- `POST /api/admin/fetch/manual`
 
-# Server Configuration
-PORT=5000
-NODE_ENV=development
-```
+Most endpoints accept query params like `limit`, `isShort`, and `minViews`.
 
-### 2. Get YouTube API Key
+## Scheduler (jobs)
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable YouTube Data API v3
-4. Create credentials (API Key)
-5. Add the API key to your `.env` file
+- Main fetch: every 15 minutes (trending + updates)
+- Viral alerts: every 15 minutes
+- Hourly trending: every hour
+- Daily cleanup: midnight
 
-### 3. Install Dependencies
+Note: the scheduler auto-starts only when `NODE_ENV === 'production'`. In development use the admin endpoint `POST /api/admin/jobs/start` to run jobs manually.
 
-```bash
-npm install
-```
+## Tests
 
-### 4. Start MongoDB
-
-Make sure MongoDB is running on your system:
-
-```bash
-# macOS with Homebrew
-brew services start mongodb-community
-
-# Ubuntu
-sudo systemctl start mongod
-
-# Or use MongoDB Atlas cloud database
-```
-
-### 5. Start the Server
-
-```bash
-# Development mode
-npm run dev
-
-# Production mode
-npm start
-```
-
-## 🔧 API Endpoints
-
-### Videos
-- `GET /api/videos/trending` - Get trending videos
-- `GET /api/videos/outliers` - Get videos with highest outlier factors
-- `GET /api/videos/shorts` - Get YouTube Shorts only
-- `GET /api/videos/longform` - Get long-form videos only
-- `GET /api/videos/stats/summary` - Get overall statistics
-- `GET /api/videos/:id` - Get specific video details
-
-### Channels
-- `GET /api/channels/:id` - Get channel details and recent videos
-- `GET /api/channels/:id/videos` - Get all videos from a channel
-- `GET /api/channels` - Get all tracked channels
-- `POST /api/channels/:id/refresh` - Manually refresh channel data
-
-### Admin
-- `GET /api/admin/status` - Get system status and job information
-- `POST /api/admin/fetch/manual` - Trigger manual data fetch
-- `POST /api/admin/jobs/start` - Start all scheduled jobs
-- `POST /api/admin/jobs/stop` - Stop all scheduled jobs
-- `POST /api/admin/outliers/calculate` - Recalculate outlier factors
-
-### Query Parameters
-
-Most endpoints support filtering:
-- `isShort=true/false` - Filter by video type
-- `limit=50` - Limit number of results
-- `minViews=1000` - Minimum view count
-- `sortBy=views/outlier/viewsPerHour` - Sort criteria
-
-## 🕐 Scheduled Jobs
-
-The system runs three automated jobs:
-
-1. **Main Fetch** (every 15 minutes): Fetches trending videos and updates existing video stats
-2. **Hourly Trending** (every hour): Quick fetch of latest trending content
-3. **Daily Cleanup** (midnight): Resets counters, updates channel averages, recalculates outliers
-
-## 🧪 Testing
-
-Run the API test suite:
+Run the API smoke tests (server must be running):
 
 ```bash
 npm run test:api
 ```
 
-This will test all endpoints and verify the system is working correctly.
+## Project structure
 
-## 📈 Outlier Detection
-
-The system calculates outlier factors using this formula:
-
-```
-outlierFactor = currentVideoViews / channelAverageViewsLast5Videos
-```
-
-- Values > 1.0 indicate above-average performance
-- Values > 2.0 indicate significant outliers
-- Values > 5.0 indicate potential viral content
-
-## 🔒 Rate Limiting
-
-The YouTube API has quotas:
-- 10,000 units per day by default
-- Each video details request costs 1 unit
-- Each channel details request costs 1 unit
-
-The system tracks API usage and provides monitoring through admin endpoints.
-
-## 📁 Project Structure
-
-```
+```text
 src/
-├── config/         # Database and configuration
-├── models/         # MongoDB schemas
-├── routes/         # API routes
-├── services/       # Business logic and external APIs
-├── tests/          # API tests
-└── app.js          # Main application file
+├─ config/       # database + env
+├─ models/       # Mongoose schemas
+├─ routes/       # Express routes
+├─ services/     # business logic + YouTube wrapper
+└─ app.js        # server entrypoint
 ```
 
-## 🚀 Deployment
-
-For production deployment:
-
-1. Set `NODE_ENV=production` in your environment
-2. Use a production MongoDB instance (MongoDB Atlas recommended)
-3. Ensure your YouTube API key has sufficient quota
-4. Consider using PM2 for process management
-
-## 📊 Performance Monitoring
-
-Monitor system performance through:
-- `/api/admin/status` - System uptime and job status
-- API request counting for YouTube quota management
-- Database query performance through MongoDB indexes
-- Scheduled job execution logs
-
-## 🎯 Next Steps
-
-This backend is ready for frontend integration and provides:
-- Real-time trending video data
-- Shorts vs Long-form categorization
-- Outlier detection for viral content identification
-- Comprehensive channel analytics
-- Automated data updates
-
-Perfect foundation for building analytics dashboards, content discovery tools, or performance monitoring applications.
+For dashboard instructions see `youtube-dashboard/README.md`.

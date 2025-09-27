@@ -1,8 +1,9 @@
-import { type ClassValue, clsx } from "clsx";
+import clsx from "clsx";
 import { twMerge } from "tailwindcss-merge";
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+export function cn(...inputs: any[]) {
+  // clsx accepts a variable list of class values; forward to twMerge for deduping
+  return twMerge(clsx(...inputs));
 }
 
 export function formatNumber(num: number): string {

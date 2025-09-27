@@ -14,7 +14,7 @@ interface AISuggestionsModalProps {
 
 export default function AISuggestionsModal({ video, isOpen, onClose }: AISuggestionsModalProps) {
   const [suggestions, setSuggestions] = useState<AISuggestions | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [copiedIndex, setCopiedIndex] = useState<{ type: string; index: number } | null>(null);
 
   const fetchSuggestions = async () => {
@@ -138,7 +138,7 @@ export default function AISuggestionsModal({ video, isOpen, onClose }: AISuggest
                     <h3 className="text-xl font-semibold text-gray-900">Viral Title Ideas</h3>
                   </div>
                   <div className="space-y-3">
-                    {suggestions.titles.map((title, index) => (
+                    {suggestions.titles.map((title: string, index: number) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: -20 }}
@@ -175,7 +175,7 @@ export default function AISuggestionsModal({ video, isOpen, onClose }: AISuggest
                     <h3 className="text-xl font-semibold text-gray-900">Thumbnail Concepts</h3>
                   </div>
                   <div className="space-y-3">
-                    {suggestions.thumbnails.map((thumbnail, index) => (
+                    {suggestions.thumbnails.map((thumbnail: string, index: number) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: -20 }}
@@ -212,7 +212,7 @@ export default function AISuggestionsModal({ video, isOpen, onClose }: AISuggest
                     <h3 className="text-xl font-semibold text-gray-900">Niche Twist Ideas</h3>
                   </div>
                   <div className="space-y-3">
-                    {suggestions.twists.map((twist, index) => (
+                    {suggestions.twists.map((twist: string, index: number) => (
                       <motion.div
                         key={index}
                         initial={{ opacity: 0, x: -20 }}

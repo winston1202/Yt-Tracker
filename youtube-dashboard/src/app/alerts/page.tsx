@@ -142,7 +142,7 @@ export default function AlertsPage() {
                   </label>
                   <select
                     value={settings.outlierThreshold}
-                    onChange={(e) => saveSettings({ outlierThreshold: parseInt(e.target.value) })}
+                    onChange={(e: any) => saveSettings({ outlierThreshold: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                   >
                     <option value={5}>5x (More alerts)</option>
@@ -162,7 +162,7 @@ export default function AlertsPage() {
                   <input
                     type="number"
                     value={settings.minViews}
-                    onChange={(e) => saveSettings({ minViews: parseInt(e.target.value) })}
+                    onChange={(e: any) => saveSettings({ minViews: parseInt(e.target.value) })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                     placeholder="1000"
                   />
@@ -217,7 +217,7 @@ export default function AlertsPage() {
                     <input
                       type="checkbox"
                       checked={settings.discordWebhook.enabled}
-                      onChange={(e) => saveSettings({
+                      onChange={(e: any) => saveSettings({
                         discordWebhook: { ...settings.discordWebhook, enabled: e.target.checked }
                       })}
                       className="sr-only peer"
@@ -234,7 +234,7 @@ export default function AlertsPage() {
                 <input
                   type="url"
                   value={settings.discordWebhook.url}
-                  onChange={(e) => saveSettings({
+                  onChange={(e: any) => saveSettings({
                     discordWebhook: { ...settings.discordWebhook, url: e.target.value }
                   })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -290,7 +290,7 @@ export default function AlertsPage() {
                     <input
                       type="checkbox"
                       checked={settings.emailAlerts.enabled}
-                      onChange={(e) => saveSettings({
+                      onChange={(e: any) => saveSettings({
                         emailAlerts: { ...settings.emailAlerts, enabled: e.target.checked }
                       })}
                       className="sr-only peer"
@@ -308,7 +308,7 @@ export default function AlertsPage() {
                   <input
                     type="email"
                     value={settings.emailAlerts.email}
-                    onChange={(e) => saveSettings({
+                    onChange={(e: any) => saveSettings({
                       emailAlerts: { ...settings.emailAlerts, email: e.target.value }
                     })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -322,7 +322,7 @@ export default function AlertsPage() {
                   </label>
                   <select
                     value={settings.emailAlerts.frequency}
-                    onChange={(e) => saveSettings({
+                    onChange={(e: any) => saveSettings({
                       emailAlerts: { ...settings.emailAlerts, frequency: e.target.value as any }
                     })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"

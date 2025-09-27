@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 
 interface LayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
   onSearch?: (query: string) => void;
   onRefresh?: () => void;
   isLoading?: boolean;

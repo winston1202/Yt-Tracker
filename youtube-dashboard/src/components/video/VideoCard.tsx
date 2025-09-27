@@ -14,7 +14,7 @@ interface VideoCardProps {
 export default function VideoCard({ video, index }: VideoCardProps) {
   const thumbnailUrl = getYouTubeThumbnail(video.videoId, 'medium');
   const outlierColorClass = getOutlierColor(video.outlierFactor);
-  const [showAIModal, setShowAIModal] = useState(false);
+  const [showAIModal, setShowAIModal] = useState<boolean>(false);
 
   return (
     <motion.div
@@ -30,8 +30,8 @@ export default function VideoCard({ video, index }: VideoCardProps) {
           src={thumbnailUrl}
           alt={video.title}
           className="w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
+          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+            const target = e.currentTarget as HTMLImageElement;
             target.src = `https://via.placeholder.com/320x180/f3f4f6/9ca3af?text=No+Image`;
           }}
         />

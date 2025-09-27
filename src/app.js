@@ -30,7 +30,7 @@ app.get('/health', (req, res) => {
 
 // Root endpoint (test)
 app.get('/', (req, res) => {
-  res.send('🎉 YouTube Tracker Backend is running!');
+  res.json({ message: '🎉 YouTube Tracker Backend is running!' });
 });
 
 // 404 handler
@@ -56,6 +56,9 @@ const PORT = process.env.PORT || 5001;
 const startServer = async () => {
   try {
     // Connect to MongoDB
+    if (!process.env.MONGO_URI) {
+      console.warn('⚠️  MONGO_URI not set. The app will attempt to connect but will likely fail.');
+    }
     await connectDB();
     console.log("✅ Connected to MongoDB Atlas");
 

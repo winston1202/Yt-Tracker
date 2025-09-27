@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "node src/app.js",
-    "test:api": "node tests/apiTest.js"
+    "test:api": "node tests/apiTest.js",
+  "dev:all": "concurrently \"npm run dev\" \"powershell -NoProfile -Command \"Set-Location -Path 'youtube-dashboard'; npm run dev\"\""
   },
   "keywords": [
     "youtube",
@@ -27,5 +28,8 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^7.0.6",
     "openai": "^4.28.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
   }
 }

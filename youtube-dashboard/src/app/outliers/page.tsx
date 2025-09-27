@@ -133,8 +133,8 @@ export default function OutliersPage() {
                               src={thumbnailUrl}
                               alt={video.title}
                               className="w-20 h-12 object-cover rounded"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
+                              onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                const target = e.currentTarget as HTMLImageElement;
                                 target.src = `https://via.placeholder.com/120x90/f3f4f6/9ca3af?text=No+Image`;
                               }}
                             />

@@ -13,8 +13,8 @@ async function testAPI() {
 
     // Test 2: Root endpoint
     console.log('\n2️⃣ Testing root endpoint...');
-    const rootResponse = await axios.get(`${BASE_URL}/`);
-    console.log('✅ Root endpoint passed:', rootResponse.data.message);
+  const rootResponse = await axios.get(`${BASE_URL}/`);
+  console.log('✅ Root endpoint passed:', rootResponse.data?.message || rootResponse.data || '<no message>');
 
     // Test 3: Manual fetch (if YouTube API key is configured)
     if (process.env.YOUTUBE_API_KEY && process.env.YOUTUBE_API_KEY !== 'your_youtube_api_key_here') {

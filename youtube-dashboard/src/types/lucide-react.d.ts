@@ -1,0 +1,32 @@
+declare module 'lucide-react' {
+  export const Sparkles: any;
+  export const TrendingUp: any;
+  export const Eye: any;
+  export const Hash: any;
+  export const Zap: any;
+  export const Bell: any;
+  export const Mail: any;
+  export const MessageSquare: any;
+  export const Settings: any;
+  export const TestTube: any;
+  export const CircleCheck: any;
+  export const Circle: any;
+  export const ChartBar: any;
+  export const Play: any;
+  export const BarChart3: any;
+  export const User: any;
+  export const Users: any;
+  export const Clock: any;
+  export const Menu: any;
+  export const X: any;
+  export const Copy: any;
+  export const Lightbulb: any;
+  export const Image: any;
+  export const Search: any;
+  export const ListFilter: any;
+  export const RefreshCw: any;
+  export const Server: any;
+  export const Pause: any;
+  export const Activity: any;
+  export default any;
+}
