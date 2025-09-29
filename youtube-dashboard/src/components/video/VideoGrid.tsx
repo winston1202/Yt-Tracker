@@ -1,6 +1,5 @@
-import { Video } from '@/types';
+import { Video } from '@/lib/api';
 import VideoCard from './VideoCard';
-import { motion } from 'framer-motion';
 
 interface VideoGridProps {
   videos: Video[];
@@ -30,23 +29,17 @@ export default function VideoGrid({ videos, isLoading }: VideoGridProps) {
 
   if (videos.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="text-center py-12"
-      >
+      <div className="text-center py-12">
         <div className="text-gray-400 text-lg mb-2">No videos found</div>
         <div className="text-gray-500 text-sm">Try refreshing or check back later</div>
-      </motion.div>
+      </div>
     );
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {videos.map((video, index) => (
-        <div key={video.videoId}>
-          <VideoCard video={video} index={index} />
-        </div>
+        <VideoCard key={video.videoId} video={video} index={index} />
       ))}
     </div>
   );

@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/database');
-const scheduler = require('./services/scheduler');
 
 const app = express();
 
@@ -11,24 +10,21 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// Basic routes
 app.use('/api/videos', require('./routes/videos'));
 app.use('/api/channels', require('./routes/channels'));
 app.use('/api/admin', require('./routes/admin'));
-app.use('/api/analytics', require('./routes/analytics'));
-app.use('/api/alerts', require('./routes/alerts'));
-app.use('/api/ai', require('./routes/ai'));
 
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
-// Root endpoint (test)
+// Root endpoint
 app.get('/', (req, res) => {
   res.json({ message: '🎉 YouTube Tracker Backend is running!' });
 });
@@ -51,30 +47,23 @@ app.use((error, req, res, next) => {
 });
 
 // Initialize database and start server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    // Connect to MongoDB
-    if (!process.env.MONGO_URI) {
-      console.warn('⚠️  MONGO_URI not set. The app will attempt to connect but will likely fail.');
+    // Connect to MongoDB if URI is provided
+    if (process.env.MONGO_URI) {
+      await connectDB();
+      console.log("✅ Connected to MongoDB");
+    } else {
+      console.log("⚠️  No MongoDB URI provided, running without database");
     }
-    await connectDB();
-    console.log("✅ Connected to MongoDB Atlas");
 
     // Start the server
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV}`);
-
-      // Start scheduled jobs in production
-      if (process.env.NODE_ENV === 'production') {
-        scheduler.startAll();
-        console.log('Scheduled jobs started');
-      } else {
-        console.log('Scheduled jobs not started (development mode)');
-        console.log('Use POST /api/admin/jobs/start to start jobs manually');
-      }
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`Visit: http://localhost:${PORT}`);
     });
     
   } catch (error) {

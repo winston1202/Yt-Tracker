@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import VideoGrid from '@/components/video/VideoGrid';
-import { videosApi } from '@/lib/api';
-import { Video } from '@/types';
-import { motion } from 'framer-motion';
+import { videosApi, Video } from '@/lib/api';
 import { Zap, TrendingUp, Eye } from 'lucide-react';
 
 export default function ShortsPage() {
@@ -34,21 +32,13 @@ export default function ShortsPage() {
 
   useEffect(() => {
     fetchShorts();
-    
-    // Auto-refresh every 60 seconds
-    const interval = setInterval(fetchShorts, 60000);
-    return () => clearInterval(interval);
   }, []);
 
   return (
     <Layout onRefresh={fetchShorts} isLoading={isLoading}>
       <div className="p-6">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+        <div className="mb-8">
           <div className="flex items-center mb-4">
             <Zap className="w-8 h-8 text-red-500 mr-3" />
             <h1 className="text-3xl font-bold text-gray-900">YouTube Shorts Trending</h1>
@@ -56,15 +46,10 @@ export default function ShortsPage() {
           <p className="text-gray-600">
             Discover the hottest YouTube Shorts with real-time performance metrics
           </p>
-        </motion.div>
+        </div>
 
         {/* Stats Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-        >
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center">
               <div className="p-2 bg-red-100 rounded-lg">
@@ -102,16 +87,10 @@ export default function ShortsPage() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Videos Grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <VideoGrid videos={videos} isLoading={isLoading} />
-        </motion.div>
+        <VideoGrid videos={videos} isLoading={isLoading} />
       </div>
     </Layout>
   );

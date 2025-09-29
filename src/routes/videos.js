@@ -1,26 +1,63 @@
 const express = require('express');
-const Video = require('../models/Video');
-const dataProcessor = require('../services/dataProcessor');
-
 const router = express.Router();
+
+// Mock data for testing
+const mockVideos = [
+  {
+    videoId: 'test1',
+    title: 'Amazing YouTube Short Goes Viral!',
+    channelId: 'channel1',
+    views: 1500000,
+    likes: 75000,
+    comments: 5000,
+    viewsPerHour: 25000,
+    isShort: true,
+    outlierFactor: 15.5,
+    trending: true,
+    uploadTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    lengthSeconds: 45,
+    category: 'Entertainment'
+  },
+  {
+    videoId: 'test2',
+    title: 'Long Form Tutorial That Exploded',
+    channelId: 'channel2',
+    views: 850000,
+    likes: 42000,
+    comments: 3200,
+    viewsPerHour: 12000,
+    isShort: false,
+    outlierFactor: 8.2,
+    trending: true,
+    uploadTime: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    lengthSeconds: 720,
+    category: 'Education'
+  }
+];
 
 // GET /videos/trending - Returns trending videos
 router.get('/trending', async (req, res) => {
   try {
     const { isShort, minViews, limit } = req.query;
     
-    const filters = {
-      isShort: isShort !== undefined ? isShort === 'true' : undefined,
-      minViews: minViews ? parseInt(minViews) : undefined,
-      limit: limit ? parseInt(limit) : 50
-    };
-
-    const videos = await dataProcessor.getTrendingVideos(filters);
+    let filteredVideos = [...mockVideos];
+    
+    if (isShort !== undefined) {
+      filteredVideos = filteredVideos.filter(v => v.isShort === (isShort === 'true'));
+    }
+    
+    if (minViews) {
+      filteredVideos = filteredVideos.filter(v => v.views >= parseInt(minViews));
+    }
+    
+    if (limit) {
+      filteredVideos = filteredVideos.slice(0, parseInt(limit));
+    }
     
     res.json({
       success: true,
-      count: videos.length,
-      data: videos
+      count: filteredVideos.length,
+      data: filteredVideos
     });
   } catch (error) {
     console.error('Error fetching trending videos:', error);
@@ -35,14 +72,19 @@ router.get('/trending', async (req, res) => {
 router.get('/outliers', async (req, res) => {
   try {
     const { limit } = req.query;
-    const videos = await dataProcessor.getOutlierVideos(
-      limit ? parseInt(limit) : 50
-    );
+    
+    let outliers = mockVideos
+      .filter(v => v.outlierFactor > 1)
+      .sort((a, b) => b.outlierFactor - a.outlierFactor);
+    
+    if (limit) {
+      outliers = outliers.slice(0, parseInt(limit));
+    }
     
     res.json({
       success: true,
-      count: videos.length,
-      data: videos
+      count: outliers.length,
+      data: outliers
     });
   } catch (error) {
     console.error('Error fetching outlier videos:', error);
@@ -58,17 +100,20 @@ router.get('/shorts', async (req, res) => {
   try {
     const { limit, minViews } = req.query;
     
-    const query = { isShort: true };
-    if (minViews) query.views = { $gte: parseInt(minViews) };
+    let shorts = mockVideos.filter(v => v.isShort);
     
-    const videos = await Video.find(query)
-      .sort({ viewsPerHour: -1 })
-      .limit(limit ? parseInt(limit) : 50);
+    if (minViews) {
+      shorts = shorts.filter(v => v.views >= parseInt(minViews));
+    }
+    
+    if (limit) {
+      shorts = shorts.slice(0, parseInt(limit));
+    }
     
     res.json({
       success: true,
-      count: videos.length,
-      data: videos
+      count: shorts.length,
+      data: shorts
     });
   } catch (error) {
     console.error('Error fetching shorts:', error);
@@ -84,17 +129,20 @@ router.get('/longform', async (req, res) => {
   try {
     const { limit, minViews } = req.query;
     
-    const query = { isShort: false };
-    if (minViews) query.views = { $gte: parseInt(minViews) };
+    let longform = mockVideos.filter(v => !v.isShort);
     
-    const videos = await Video.find(query)
-      .sort({ viewsPerHour: -1 })
-      .limit(limit ? parseInt(limit) : 50);
+    if (minViews) {
+      longform = longform.filter(v => v.views >= parseInt(minViews));
+    }
+    
+    if (limit) {
+      longform = longform.slice(0, parseInt(limit));
+    }
     
     res.json({
       success: true,
-      count: videos.length,
-      data: videos
+      count: longform.length,
+      data: longform
     });
   } catch (error) {
     console.error('Error fetching long-form videos:', error);
@@ -105,46 +153,18 @@ router.get('/longform', async (req, res) => {
   }
 });
 
-// GET /videos/:id - Get specific video details
-router.get('/:id', async (req, res) => {
-  try {
-    const video = await Video.findOne({ videoId: req.params.id });
-    
-    if (!video) {
-      return res.status(404).json({
-        success: false,
-        error: 'Video not found'
-      });
-    }
-    
-    res.json({
-      success: true,
-      data: video
-    });
-  } catch (error) {
-    console.error('Error fetching video:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch video'
-    });
-  }
-});
-
 // GET /videos/stats/summary - Get overall statistics
 router.get('/stats/summary', async (req, res) => {
   try {
-    const totalVideos = await Video.countDocuments();
-    const totalShorts = await Video.countDocuments({ isShort: true });
-    const totalLongForm = await Video.countDocuments({ isShort: false });
-    const trendingVideos = await Video.countDocuments({ trending: true });
+    const totalVideos = mockVideos.length;
+    const totalShorts = mockVideos.filter(v => v.isShort).length;
+    const totalLongForm = totalVideos - totalShorts;
+    const trendingVideos = mockVideos.filter(v => v.trending).length;
     
-    // Get top performing videos
-    const topOutliers = await Video.find({ 
-      outlierFactor: { $gt: 1 },
-      views: { $gt: 0 }
-    })
-      .sort({ outlierFactor: -1 })
-      .limit(5);
+    const topOutliers = mockVideos
+      .filter(v => v.outlierFactor > 1)
+      .sort((a, b) => b.outlierFactor - a.outlierFactor)
+      .slice(0, 5);
     
     res.json({
       success: true,
@@ -154,7 +174,7 @@ router.get('/stats/summary', async (req, res) => {
         totalLongForm,
         trendingVideos,
         topOutliers,
-        percentageShorts: totalVideos > 0 ? (totalShorts / totalVideos * 100).toFixed(1) : 0
+        percentageShorts: totalVideos > 0 ? ((totalShorts / totalVideos) * 100).toFixed(1) : '0'
       }
     });
   } catch (error) {

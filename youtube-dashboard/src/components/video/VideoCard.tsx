@@ -1,10 +1,6 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Video } from '@/types';
-import { formatNumber, formatTimeAgo, formatDuration, getOutlierColor, getYouTubeThumbnail } from '@/lib/utils';
-import { Eye, Clock, TrendingUp, User, Sparkles } from 'lucide-react';
-import Link from 'next/link';
-import AISuggestionsModal from './AISuggestionsModal';
+import { Video } from '@/lib/api';
+import { formatNumber, formatTimeAgo, formatDuration, getOutlierColor } from '@/lib/utils';
+import { Eye, Clock, TrendingUp, User } from 'lucide-react';
 
 interface VideoCardProps {
   video: Video;
@@ -12,26 +8,19 @@ interface VideoCardProps {
 }
 
 export default function VideoCard({ video, index }: VideoCardProps) {
-  const thumbnailUrl = getYouTubeThumbnail(video.videoId, 'medium');
+  const thumbnailUrl = `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`;
   const outlierColorClass = getOutlierColor(video.outlierFactor);
-  const [showAIModal, setShowAIModal] = useState<boolean>(false);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 group relative"
-    >
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200">
       {/* Thumbnail */}
       <div className="relative aspect-video bg-gray-100">
         <img
           src={thumbnailUrl}
           alt={video.title}
           className="w-full h-full object-cover"
-          onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-            const target = e.currentTarget as HTMLImageElement;
+          onError={(e) => {
+            const target = e.currentTarget;
             target.src = `https://via.placeholder.com/320x180/f3f4f6/9ca3af?text=No+Image`;
           }}
         />
@@ -64,13 +53,10 @@ export default function VideoCard({ video, index }: VideoCardProps) {
         </h3>
 
         {/* Channel */}
-        <Link
-          href={`/channel/${video.channelId}`}
-          className="flex items-center text-gray-600 hover:text-red-600 transition-colors mb-3"
-        >
+        <div className="flex items-center text-gray-600 mb-3">
           <User className="w-4 h-4 mr-1" />
           <span className="text-sm truncate">Channel</span>
-        </Link>
+        </div>
 
         {/* Stats */}
         <div className="space-y-2">
@@ -98,24 +84,6 @@ export default function VideoCard({ video, index }: VideoCardProps) {
           </div>
         </div>
       </div>
-
-      {/* AI Suggestions Button */}
-      <div className="absolute top-2 left-2">
-        <button
-          onClick={() => setShowAIModal(true)}
-          className="bg-purple-500 hover:bg-purple-600 text-white p-2 rounded-full shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-          title="AI Ideas"
-        >
-          <Sparkles className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* AI Suggestions Modal */}
-      <AISuggestionsModal
-        video={video}
-        isOpen={showAIModal}
-        onClose={() => setShowAIModal(false)}
-      />
-    </motion.div>
+    </div>
   );
 }

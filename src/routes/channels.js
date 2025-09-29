@@ -1,130 +1,36 @@
 const express = require('express');
-const Channel = require('../models/Channel');
-const Video = require('../models/Video');
-const youtubeService = require('../services/youtubeService');
-
 const router = express.Router();
+
+// Mock channel data
+const mockChannels = {
+  'channel1': {
+    channelId: 'channel1',
+    channelName: 'Viral Shorts Creator',
+    subscriberCount: 250000,
+    totalViews: 15000000,
+    uploadCount: 150,
+    channelAge: new Date('2020-01-15').toISOString(),
+    avgViewsLast5: 95000,
+    description: 'Creating viral short-form content',
+    lastUpdated: new Date().toISOString()
+  },
+  'channel2': {
+    channelId: 'channel2',
+    channelName: 'Educational Content Pro',
+    subscriberCount: 180000,
+    totalViews: 8500000,
+    uploadCount: 85,
+    channelAge: new Date('2019-06-20').toISOString(),
+    avgViewsLast5: 105000,
+    description: 'High-quality educational tutorials',
+    lastUpdated: new Date().toISOString()
+  }
+};
 
 // GET /channels/:id - Returns channel details
 router.get('/:id', async (req, res) => {
   try {
-    let channel = await Channel.findOne({ channelId: req.params.id });
-    
-    if (!channel) {
-      // Try to fetch from YouTube API
-      try {
-        const channelData = await youtubeService.getChannelDetails(req.params.id);
-        if (!channelData) {
-          return res.status(404).json({
-            success: false,
-            error: 'Channel not found'
-          });
-        }
-        channel = new Channel(channelData);
-        await channel.save();
-        await channel.updateAverageViews();
-      } catch (error) {
-        console.error('Error fetching channel from YouTube:', error);
-        return res.status(404).json({
-          success: false,
-          error: 'Channel not found'
-        });
-      }
-    }
-
-    // Get channel's recent videos
-    const recentVideos = await Video.find({ channelId: req.params.id })
-      .sort({ uploadTime: -1 })
-      .limit(10);
-
-    // Calculate additional metrics
-    const totalVideosTracked = await Video.countDocuments({ channelId: req.params.id });
-    const shortsCount = await Video.countDocuments({ channelId: req.params.id, isShort: true });
-    const longFormCount = totalVideosTracked - shortsCount;
-
-    res.json({
-      success: true,
-      data: {
-        ...channel.toObject(),
-        recentVideos,
-        totalVideosTracked,
-        shortsCount,
-        longFormCount
-      }
-    });
-  } catch (error) {
-    console.error('Error fetching channel details:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch channel details'
-    });
-  }
-});
-
-// GET /channels/:id/videos - Get all videos from a channel
-router.get('/:id/videos', async (req, res) => {
-  try {
-    const { isShort, limit, sortBy } = req.query;
-    
-    const query = { channelId: req.params.id };
-    if (isShort !== undefined) {
-      query.isShort = isShort === 'true';
-    }
-
-    let sortOption = { uploadTime: -1 };
-    if (sortBy === 'views') sortOption = { views: -1 };
-    if (sortBy === 'outlier') sortOption = { outlierFactor: -1 };
-    if (sortBy === 'viewsPerHour') sortOption = { viewsPerHour: -1 };
-
-    const videos = await Video.find(query)
-      .sort(sortOption)
-      .limit(limit ? parseInt(limit) : 50);
-
-    res.json({
-      success: true,
-      count: videos.length,
-      data: videos
-    });
-  } catch (error) {
-    console.error('Error fetching channel videos:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch channel videos'
-    });
-  }
-});
-
-// GET /channels - Get all tracked channels
-router.get('/', async (req, res) => {
-  try {
-    const { limit, sortBy } = req.query;
-    
-    let sortOption = { subscriberCount: -1 };
-    if (sortBy === 'avgViews') sortOption = { avgViewsLast5: -1 };
-    if (sortBy === 'totalViews') sortOption = { totalViews: -1 };
-
-    const channels = await Channel.find({})
-      .sort(sortOption)
-      .limit(limit ? parseInt(limit) : 50);
-
-    res.json({
-      success: true,
-      count: channels.length,
-      data: channels
-    });
-  } catch (error) {
-    console.error('Error fetching channels:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch channels'
-    });
-  }
-});
-
-// POST /channels/:id/refresh - Manually refresh channel data
-router.post('/:id/refresh', async (req, res) => {
-  try {
-    const channel = await Channel.findOne({ channelId: req.params.id });
+    const channel = mockChannels[req.params.id];
     
     if (!channel) {
       return res.status(404).json({
@@ -133,24 +39,32 @@ router.post('/:id/refresh', async (req, res) => {
       });
     }
 
-    // Fetch updated data from YouTube API
-    const channelData = await youtubeService.getChannelDetails(req.params.id);
-    Object.assign(channel, channelData);
-    channel.lastUpdated = new Date();
-    
-    await channel.save();
-    await channel.updateAverageViews();
+    // Add some mock recent videos
+    const recentVideos = [
+      {
+        videoId: 'recent1',
+        title: 'Latest viral video from this channel',
+        views: 125000,
+        uploadTime: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+        isShort: channel.channelId === 'channel1'
+      }
+    ];
 
     res.json({
       success: true,
-      data: channel,
-      message: 'Channel data refreshed successfully'
+      data: {
+        ...channel,
+        recentVideos,
+        totalVideosTracked: 10,
+        shortsCount: channel.channelId === 'channel1' ? 8 : 2,
+        longFormCount: channel.channelId === 'channel1' ? 2 : 8
+      }
     });
   } catch (error) {
-    console.error('Error refreshing channel:', error);
+    console.error('Error fetching channel details:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to refresh channel data'
+      error: 'Failed to fetch channel details'
     });
   }
 });
