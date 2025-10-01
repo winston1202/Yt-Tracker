@@ -51,10 +51,15 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    // Connect to MongoDB if URI is provided
+    // Connect to MongoDB if URI is provided (optional)
     if (process.env.MONGO_URI) {
-      await connectDB();
-      console.log("✅ Connected to MongoDB");
+      try {
+        await connectDB();
+        console.log("✅ Connected to MongoDB");
+      } catch (error) {
+        console.log("⚠️  MongoDB connection failed, running without database");
+        console.log("   To use database features, ensure MongoDB is running or check MONGO_URI");
+      }
     } else {
       console.log("⚠️  No MongoDB URI provided, running without database");
     }
@@ -67,8 +72,15 @@ const startServer = async () => {
     });
     
   } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+    console.error('Server startup error:', error);
+    console.log('🚀 Starting server without database...');
+    
+    // Start the server anyway
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT} (without database)`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`Visit: http://localhost:${PORT}`);
+    });
   }
 };
 
